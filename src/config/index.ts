@@ -2,7 +2,8 @@
 import dotenv from 'dotenv';
 
 type ServerConfig = {
-    PORT: number
+    PORT: number,
+    DB_URL: string
 }
 
 function loadEnv() {
@@ -13,5 +14,6 @@ function loadEnv() {
 loadEnv();
 
 export const serverConfig: ServerConfig = {
-    PORT: Number(process.env.PORT) || 3001
+    PORT: Number(process.env.PORT) || 3001,
+    DB_URL: process.env.DB_URL || 'mongodb+srv://pachourishreyansh_db_user:HK2IpKrlXuJ1FjVA@cluster0.yfuzrou.mongodb.net/?appName=Cluster0'
 };
