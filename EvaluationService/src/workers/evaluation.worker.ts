@@ -5,7 +5,7 @@ import { Worker } from "bullmq";
 
 async function setupEvaluationWorker(){
     const worker = new Worker(SUBMISSION_QUEUE, async(job) => {
-        logger.info(`Processing job ${job}`)
+        logger.info(`Processing job ${job.id}`)
     }, {
         connection: createNewRedisConnection()
     })
@@ -15,12 +15,12 @@ async function setupEvaluationWorker(){
     })
 
     worker.on("completed", (job) => {
-        logger.error(`Evaluation job completed: ${job}`)
+        logger.info(`Evaluation job completed: ${job.id}`)
     })
 
-    worker.on("failed", (job, error) => {
-        logger.error(`Evaluation job failed: ${job}`, error)
-    })
+   worker.on("failed", (job, error) => {
+    logger.error(`Evaluation job failed: ${job?.id}, reason: ${error.message}`)
+})
 }
 
 export async function startworkers(){
