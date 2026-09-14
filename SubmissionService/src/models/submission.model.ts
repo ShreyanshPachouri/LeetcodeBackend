@@ -15,6 +15,7 @@ export interface ISubmissionData {
     status: string;
 }
 export interface ISubmission extends Document {
+    id: string;
     problemId: string;
     code: string;
     language: SubmissionLanguage;
@@ -53,10 +54,11 @@ const submissionSchema = new Schema<ISubmission>({
     timestamps: true,
     toJSON: {
         transform: (_, record) => {
-            delete (record as any).__v; // delete __v field
-            record.id = record._id; // add id field
-            delete record._id; // delete _id field
-            return record;
+            const rec = record as any;
+            delete rec.__v; // delete __v field
+            rec.id = rec._id; // add id field
+            delete rec._id; // delete _id field
+            return rec;
         }
     }
 });
