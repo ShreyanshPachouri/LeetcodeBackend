@@ -1,11 +1,8 @@
 import { Document, Schema, model } from "mongoose"
 
 export enum SubmissionStatus{
+    COMPLETED = "completed",
     PENDING = "pending",
-    COMPILING = "compiling",
-    RUNNING = "running",
-    ACCEPTED = "accepted",
-    WRONG_ANSWER = "wrong_answer"
 }
 
 export enum SubmissionLanguage{

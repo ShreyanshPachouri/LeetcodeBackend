@@ -1,0 +1,78 @@
+import { InternalServerError } from "../errors/app.error"
+import { createNewDockerContainer } from "./createContainer.util"
+import { commands } from "./commands.util";
+
+const allowListedLanguage = ["python", "cpp"]
+
+export interface RunCodeOptions{
+    code: string,
+    language: "python" | "cpp",
+    timeout: number,
+    imageName: string,
+    input: string
+}
+
+export async function runCode(options: RunCodeOptions){
+    const { code, language, timeout, imageName, input } = options
+
+    if(!allowListedLanguage.includes(language)){
+        throw new InternalServerError(`Invalid language: ${language}`)
+    }
+
+    const container = await createNewDockerContainer({
+        imageName: imageName,
+        cmdExecutable: commands[language](code, input),
+        memoryLimit: 1024 * 1024 * 1024,
+    })
+
+    let isTimeLimitedExceeded = false
+
+    const timeLimitExceededTimeout = setTimeout(() => {
+        console.log("Time limit exceeded")
+        isTimeLimitedExceeded = true
+        container?.kill()
+    }, timeout)
+
+    await container?.start()
+    const status = await container?.wait()
+
+    if(isTimeLimitedExceeded){
+        await container?.remove()
+        return {
+            status: "time_limit_exceeded",
+            output: "Time limit exceeded"
+        }
+    }
+
+    const logs = await container?.logs({
+        stdout: true,
+        stderr: true
+    });
+
+
+    const containerLogs = processLogs(logs);
+
+    await container?.remove();
+
+    clearTimeout(timeLimitExceededTimeout);
+
+    if(status.StatusCode == 0) {
+        // success
+        return {
+            status: "success",
+            output: containerLogs
+        }
+    } else {
+        return {
+            status: "failed",
+            output: containerLogs
+        }
+    }
+}
+
+function processLogs(logs: Buffer | undefined) {
+    return logs?.toString('utf8')
+    .replace(/\x00/g, '') // Remove null bytes
+    .replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, '') // Remove control characters except \n (0x0A)
+    .trim();
+}
