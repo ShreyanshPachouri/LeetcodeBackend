@@ -15,7 +15,6 @@ export interface ISubmissionData {
     status: string;
 }
 export interface ISubmission extends Document {
-    [x: string]: string;
     problemId: string;
     code: string;
     language: SubmissionLanguage;
