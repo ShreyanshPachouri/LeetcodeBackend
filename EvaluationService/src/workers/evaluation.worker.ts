@@ -66,8 +66,8 @@ async function setupEvaluationWorker() {
 
             await updateSubmission(data.submissionId, "completed", output || {});
         } catch (error) {
-            logger.error(`Evaluation job failed: ${job}`, error);
-            return;
+            logger.error(`Evaluation job failed: ${job.id}`, error);
+            throw error
         }
         
     }, {
